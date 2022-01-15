@@ -1,2 +1,4 @@
 # local environment variables file
+[server]
 port=1234
+host="localhost"

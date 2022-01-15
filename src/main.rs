@@ -1,32 +1,37 @@
+// #[macro_use]
+// extern crate juniper;
+// use juniper::FieldResult;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+
+// my modules and crates
+mod config;
+mod models;
+use crate::models::Status;
 
 #[get("/")]
 async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("PONG!")
+#[get("/users")]
+async fn users() -> impl Responder {
+    HttpResponse::Ok().json(Status {
+        status: "Ok".to_string(),
+    })
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut config = config::Config::new();
+    let config = crate::config::Config::build_config().unwrap();
 
-    config
-        .merge(config::File::with_name("config.toml").required(false))
-        .unwrap();
-    config.merge(config::Environment::default()).unwrap();
+    let server = HttpServer::new(|| App::new().service(hello).service(users))
+        .bind(format!("{}:{}", config.server.host, config.server.port))?
+        .run();
 
-    let server = HttpServer::new(|| {
-        App::new()
-            .service(hello)
-            .route("/ping", web::get().to(manual_hello))
-    })
-    .bind(format!(
-        "127.0.0.1:{}",
-        config.get::<String>("port").unwrap()
-    ))?
-    .run();
+    println!(
+        "Running server at http://{}:{}",
+        config.server.host, config.server.port
+    );
+
     server.await
 }
