@@ -2,15 +2,22 @@
 use config::ConfigError;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct ServerConfig {
     pub host: String,
     pub port: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
+pub struct DatabaseConfig {
+    pub connection_string: String,
+    pub dbname: String,
+}
+
+#[derive(Deserialize, Clone)]
 pub struct Config {
     pub server: ServerConfig,
+    pub database: DatabaseConfig,
 }
 
 impl Config {
